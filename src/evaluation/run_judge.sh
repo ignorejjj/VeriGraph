@@ -1,18 +1,22 @@
-cd /root/data/jjj/VerifyReport/src
+#!/usr/bin/env bash
+# Judge-based evaluation entrypoint.
+#
+# Before running, serve the judge model at $JUDGE_API_URL with an
+# OpenAI-compatible runtime (see ../serving/host_model.sh).
 
-prefix='verigraph-checkpoint-1911-sft-v3-0404-multiturn-keep-history'
-# prefix='verigraph-sft-v2-0327-multiturn'
-# python eval_results.py --output_dir "/root/data/jjj/VerifyReport/outputs/tablebench-${prefix}"
-# python eval_results.py --output_dir "/root/data/jjj/VerifyReport/outputs/infiagent_dabbench-${prefix}"
-# python eval_results.py --output_dir "/root/data/jjj/VerifyReport/outputs/dsbench-${prefix}"
-# python eval_results.py --output_dir "/root/data/jjj/VerifyReport/outputs/dabstep_research-${prefix}"
-python eval_results.py --output_dir "/root/data/jjj/VerifyReport/outputs/qrdata-${prefix}"
+set -e
 
-# python run_evaluation.py --dataset_name tablebench --agent_type 'verigraph' --num_samples 1 --debug
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+cd "${SCRIPT_DIR}"
 
-prefix='verigraph-checkpoint-1911-sft-v3-0404-multiturn-no-history'
-# python eval_results.py --output_dir "/root/data/jjj/VerifyReport/outputs/tablebench-${prefix}"
-# python eval_results.py --output_dir "/root/data/jjj/VerifyReport/outputs/infiagent_dabbench-${prefix}"
-# python eval_results.py --output_dir "/root/data/jjj/VerifyReport/outputs/dsbench-${prefix}"
-# python eval_results.py --output_dir "/root/data/jjj/VerifyReport/outputs/dabstep_research-${prefix}"
-python eval_results.py --output_dir "/root/data/jjj/VerifyReport/outputs/qrdata-${prefix}"
+# Each inference run produces one directory under $OUTPUT_ROOT named
+# "<dataset>-<agent_type>-<model_suffix>[-<save_note>]".
+# Pass the directories to score in OUTPUT_DIRS, separated by spaces.
+if [[ ${#OUTPUT_DIRS[@]} -eq 0 ]]; then
+  echo "Set OUTPUT_DIRS=(\"./outputs/tablebench-verigraph-...\" ...) before running." >&2
+  exit 1
+fi
+
+for output_dir in "${OUTPUT_DIRS[@]}"; do
+  python judge.py --output_dir "${output_dir}"
+done

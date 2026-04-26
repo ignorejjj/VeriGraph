@@ -548,7 +548,7 @@ class VeriGraphRewardManager:
                     }
                 )
             
-            # 计算推理步骤的奖励
+            # Compute reward for inference steps
             if getattr(self, "infer_weight", 0.0) > 0 and valid_trajectory and infer_steps:
                 for step_i, step in enumerate(infer_steps):
                     premise_texts = [
@@ -590,7 +590,7 @@ class VeriGraphRewardManager:
         for idx in range(len(data)):
             data_item = data[idx]
 
-            # infer_score计算
+            # Compute infer_score
             trajectory = _as_plain_object(data_item.non_tensor_batch.get("trajectory", [])) or []
             infer_steps = _extract_infer_steps_from_trajectory(trajectory)
             infer_scores = []

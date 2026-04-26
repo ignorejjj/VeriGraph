@@ -6,9 +6,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-# `verl-datamind` is nested under the project root (which also contains `agents/`).
-# Add the repo root to sys.path so we can reuse the existing VeriGraph executor/runtime.
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
+# Add the repo `src/` directory to sys.path so we can reuse the VeriGraph
+# executor/runtime defined under `src/agents/`.
+PROJECT_ROOT = Path(__file__).resolve().parents[4]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.append(str(PROJECT_ROOT))
 

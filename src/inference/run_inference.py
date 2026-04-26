@@ -8,6 +8,11 @@ import numpy as np
 import traceback
 from typing import Any, Dict, Optional
 
+# Make `agents` importable when launched as a script.
+_SRC_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _SRC_DIR not in sys.path:
+    sys.path.insert(0, _SRC_DIR)
+
 from agents.codeact import CodeActAgent
 from agents.verigraph import VerigraphAgent
 
@@ -20,22 +25,29 @@ except Exception:
         return iterable if iterable is not None else []
 
 
-# MODEL_PATH = "/root/data/jjj/VerifyReport/model_checkpoints/sft_v1_0310/v0-20260310-153744/checkpoint-356"
-MODEL_PATH = "/root/data/jjj/models/qwq-32b"
-MODEL_NAME = MODEL_PATH
-API_URL = "http://localhost:8000/v1"
-API_KEY = "empty"
-OUTPUT_ROOT = "/root/data/jjj/VerifyReport/outputs/"
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-MAX_VLLM_CONCURRENCY = 128
-PER_ITEM_TIMEOUT = 2000
+# Configurable through environment variables; defaults assume a locally-served
+# OpenAI-compatible model and the data layout that ships with this repo.
+MODEL_PATH = os.environ.get("VERIGRAPH_MODEL_PATH", "Qwen/QwQ-32B")
+MODEL_NAME = os.environ.get("VERIGRAPH_MODEL_NAME", MODEL_PATH)
+API_URL = os.environ.get("VERIGRAPH_API_URL", "http://localhost:8000/v1")
+API_KEY = os.environ.get("VERIGRAPH_API_KEY", "EMPTY")
+OUTPUT_ROOT = os.environ.get(
+    "VERIGRAPH_OUTPUT_ROOT", os.path.join(REPO_ROOT, "outputs")
+)
+DATA_ROOT = os.environ.get("VERIGRAPH_DATA_ROOT", os.path.join(REPO_ROOT, "data", "eval"))
+
+MAX_VLLM_CONCURRENCY = int(os.environ.get("VERIGRAPH_MAX_CONCURRENCY", "128"))
+PER_ITEM_TIMEOUT = int(os.environ.get("VERIGRAPH_PER_ITEM_TIMEOUT", "2000"))
 
 
 DATASET_PATHS = {
-    "tablebench": "/root/data/jjj/VerifyReport/data/eval/tablebench",
-    "dabstep_research": "/root/data/jjj/VerifyReport/data/eval/dabstep_research",
-    "infiagent_dabbench": "/root/data/jjj/VerifyReport/data/eval/infiagent_dabbench",
-    "dsbench": "/root/data/jjj/VerifyReport/data/eval/dsbench",
+    "tablebench": os.path.join(DATA_ROOT, "tablebench"),
+    "dabstep_research": os.path.join(DATA_ROOT, "dabstep_research"),
+    "infiagent_dabbench": os.path.join(DATA_ROOT, "infiagent_dabbench"),
+    "dsbench": os.path.join(DATA_ROOT, "dsbench"),
+    "qrdata": os.path.join(DATA_ROOT, "qrdata"),
 }
 
 LLM_CONFIG: Dict[str, Any] = {

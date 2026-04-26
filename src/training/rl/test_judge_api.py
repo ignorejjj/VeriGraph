@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-"""
-直接复刻 VeriGraphRewardManager 中 _AsyncJudgeClient 的调用方式测试 LLM API。
+"""Smoke test for the VeriGraph reward-judge endpoint.
 
-用法:
+Mirrors the call shape used by ``VeriGraphRewardManager._AsyncJudgeClient``,
+so any breakage at the network/auth layer surfaces here first.
+
+Usage:
     export VERIGRAPH_JUDGE_MODEL="gpt-4o-mini"
-    export VERIGRAPH_JUDGE_API_BASE="http://aigc.x-see.cn"
-    export VERIGRAPH_JUDGE_API_KEY="sk-xxx"
+    export VERIGRAPH_JUDGE_API_BASE="https://api.openai.com/v1"
+    export VERIGRAPH_JUDGE_API_KEY="sk-..."
     python test_judge_api.py
 """
 
@@ -16,7 +18,7 @@ import os
 from openai import AsyncOpenAI
 
 
-# ── 和 verigraph.py 一模一样的函数 ──
+# ---- Helpers (kept identical to the runtime versions) ----
 
 def _coerce_text(value):
     if value is None:
@@ -60,8 +62,6 @@ def _parse_judge_result(text):
     return score, reason
 
 
-# ── 和 verigraph.py 一模一样的 system prompt ──
-
 SYSTEM_PROMPT = """You are a strict grader for a data-analysis QA task.
 Score how well the candidate final claims answer the question according to the reference answer.
 
@@ -86,15 +86,13 @@ async def main():
     print(f"api_base: {api_base}")
     print(f"api_key:  {api_key[:8]}...", flush=True)
 
-    # ── 和 _AsyncJudgeClient.__init__ 一模一样 ──
     client = AsyncOpenAI(
         api_key=api_key,
         base_url=api_base,
         timeout=120,
     )
 
-    # ── 和 _AsyncJudgeClient._score_one 一模一样 ──
-    print("\n调用中...", flush=True)
+    print("\nCalling judge...", flush=True)
     try:
         response = await client.chat.completions.create(
             model=model,
@@ -107,11 +105,11 @@ async def main():
         )
         text = _extract_judge_response_text(response)
         score, reason = _parse_judge_result(text)
-        print(f"原始返回: {text}")
-        print(f"score:    {score}")
-        print(f"reason:   {reason}")
+        print(f"raw response: {text}")
+        print(f"score:        {score}")
+        print(f"reason:       {reason}")
     except Exception as e:
-        print(f"失败: {type(e).__name__}: {e}")
+        print(f"failed: {type(e).__name__}: {e}")
 
 
 if __name__ == "__main__":

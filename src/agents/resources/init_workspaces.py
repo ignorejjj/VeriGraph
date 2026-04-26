@@ -12,31 +12,31 @@ import datetime
 from typing import Any, Dict, List, Optional, Union
 from dataclasses import dataclass, field, asdict
 
-# --- 配置路径 ---
+# --- Workspace path ---
 data_dir = "<<SYSTEM_DIR_PLACEHOLDER>>"
 if os.path.exists(data_dir):
     os.chdir(data_dir)
 else:
     print(f"[Warning] System dir does not exist.")
 
-# --- 核心类定义 ---
+# --- Core class definitions ---
 
 @dataclass
 class Claim:
     id: str
-    content: str               # 结论/事实内容 (The 'conclusion')
+    content: str               # The conclusion/fact content.
     type: str                  # 'atomic' (bound) or 'composite' (inferred)
-    template: str = ""         # 原始模板 (仅 atomic 有效)
-    premise_ids: List[str] = field(default_factory=list) # 依赖的 Claim ID
-    bound_vars: dict = field(default_factory=dict)       # 绑定的变量 (仅 atomic 有效)
-    reasoning: str = ""        # 推理逻辑 (仅 composite 有效)
-    final_node: bool = False   # 是否被包含在最终答案中
+    template: str = ""         # Original template (only used for atomic claims).
+    premise_ids: List[str] = field(default_factory=list) # IDs of dependency claims.
+    bound_vars: dict = field(default_factory=dict)       # Bound variables (atomic only).
+    reasoning: str = ""        # Reasoning trace (composite only).
+    final_node: bool = False   # Whether this claim is part of the final answer.
 
     def to_dict(self):
         return asdict(self)
-    
+
     def __repr__(self):
-        # 简化打印，方便在 tool output 中查看
+        # Compact repr for tool output readability.
         return f'Claim(id={self.id}, content="{self.content}")'
 
 class ClaimGraphManager:
@@ -54,7 +54,7 @@ class ClaimGraphManager:
     def register_atomic(self, template: str, kwargs: Dict[str, Any]) -> Claim:
         cid = self._generate_id()
         try:
-            # 尝试格式化
+            # Try to format the template.
             content = template.format(**kwargs)
         except Exception as e:
             content = f"[Error formatting: {e}] {{template}}"
@@ -100,25 +100,24 @@ class ClaimGraphManager:
         if not self.claims:
             return "No claims established yet."
 
-        # 1. 构建反向映射：Claim实例 -> 变量名
-        # 我们只关心最顶层的变量，且排除私有变量
+        # 1. Build a reverse map: Claim instance -> variable name.
+        # Only top-level user variables are considered.
         claim_to_var = {}
         if env_globals:
             for var_name, var_val in env_globals.items():
-                if var_name.startswith('_'): continue # 跳过系统变量
-                
-                # 检查是否是 Claim 对象
+                if var_name.startswith('_'): continue # Skip private/internal names.
+
+                # Check whether the value is a Claim instance.
                 if isinstance(var_val, Claim):
-                    # 如果该对象还没被记录，或者找到了更短的变量名（通常更可读），则记录
+                    # Record the shortest variable name pointing at this claim.
                     if var_val.id not in claim_to_var:
                         claim_to_var[var_val.id] = var_name
                     elif len(var_name) < len(claim_to_var[var_val.id]):
                         claim_to_var[var_val.id] = var_name
-                
-                # (可选) 如果你想支持列表中的 Claim，比如 claims = [c1, c2]
-                # 这里可以加额外的逻辑，但会增加复杂度，通常 Agent 倾向于定义独立变量
 
-        # 2. 生成文本
+                # Lists of Claim objects are intentionally not unpacked here.
+
+        # 2. Render textual summary.
         # Limit output to keep tool context small.
         final_ids = [cid for cid, c in self.claims.items() if c.final_node]
         non_final_ids = [cid for cid, c in self.claims.items() if not c.final_node]
@@ -136,23 +135,23 @@ class ClaimGraphManager:
             claim = self.claims.get(cid)
             if claim is None:
                 continue
-            # 获取变量名，如果找不到（比如是一个 list 里的元素或者未赋值），显示 <anon>
+            # Variable name shown to the agent, "N/A" if not bound at top level.
             var_name = claim_to_var.get(cid, "N/A")
-            
-            # 格式优化：让 Agent 感觉是在看代码注释
+
+            # Format inspired by source-code comments to be friendly to the agent.
             # [ID] var_name: "Content" (Type)
-            
+
             prefix = "[Final]" if claim.final_node else f"[{cid}]"
-            
-            # 如果有变量名，显示变量名，否则只显示 ID
+
+            # Show the variable name when present, otherwise fall back to the id.
             if var_name != "N/A":
                 ref_str = f"{var_name} ({cid})"
             else:
                 ref_str = f"{cid}"
 
             type_tag = "Context" if claim.type == 'atomic' else "Inferred"
-            
-            # 限制内容长度，防止过长
+
+            # Truncate content to keep tool context bounded.
             content_preview = claim.content
             if len(content_preview) > 100:
                 content_preview = content_preview[:100] + "..."
@@ -344,7 +343,7 @@ def submit_answer(final_claims: Union[List[Claim], Claim]) -> None:
         print("[System] Answer already submitted. Ignore.")
         return
 
-    # 容错：处理单个 Claim 的情况
+    # Allow callers to pass a single Claim instead of a list.
     if isinstance(final_claims, Claim):
         final_claims = [final_claims]
     

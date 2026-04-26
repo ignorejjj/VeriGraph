@@ -8,7 +8,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm  
 import argparse
 
-# --- 配置部分 ---
+# --- Configuration ---
 JUDGE_PROMPT = """You are an impartial and rigorous evaluator. Your task is to determine if the [Model Prediction] is correct based on the provided [Question] and [Golden Label].
 
 ### Evaluation Criteria:
@@ -62,22 +62,30 @@ Return your evaluation strictly as JSON:
 ```"""
 
 argparser = argparse.ArgumentParser()
-argparser.add_argument('--output_dir', type=str, default='')
+argparser.add_argument('--output_dir', type=str, required=True,
+                       help='Directory holding the per-item JSON predictions to score.')
+argparser.add_argument('--judge_model', type=str,
+                       default=os.environ.get('JUDGE_MODEL', 'Qwen/QwQ-32B'),
+                       help='Judge model id passed to the OpenAI-compatible endpoint.')
+argparser.add_argument('--judge_api_url', type=str,
+                       default=os.environ.get('JUDGE_API_URL', 'http://localhost:8000/v1'))
+argparser.add_argument('--judge_api_key', type=str,
+                       default=os.environ.get('JUDGE_API_KEY', 'EMPTY'))
+argparser.add_argument('--max_workers', type=int,
+                       default=int(os.environ.get('JUDGE_MAX_WORKERS', '30')))
 args = argparser.parse_args()
+
 output_dir = args.output_dir
-# output_dir = '/root/data/jjj/VerifyReport/outputs/tablebench-verigraph-checkpoint-356-sft-v1-update-0311'
-dataset_name = output_dir.split("/")[-1].split("-")[0]
-model_name = '/root/data/jjj/models/qwq-32b'
-api_url = "http://localhost:8000/v1"
-api_key = "empty"
+dataset_name = output_dir.rstrip('/').split('/')[-1].split('-')[0]
+model_name = args.judge_model
+api_url = args.judge_api_url
+api_key = args.judge_api_key
 
 client = OpenAI(api_key=api_key, base_url=api_url)
-MAX_WORKERS = 30 
+MAX_WORKERS = args.max_workers
 
 def process_single_item(item_name):
-    """
-    处理单个文件的函数
-    """
+    """Score a single prediction file with the judge model."""
     file_path = os.path.join(output_dir, item_name)
     
     
@@ -103,7 +111,7 @@ def process_single_item(item_name):
 
     pred_answer = prediction
 
-    # 根据不同dataset_name决定评测方式
+    # Choose evaluation mode based on dataset
     if 'research' in dataset_name:
         if pred_answer is None:
             metrics = {'content_score': 0, 'format_score': 0, 'reasoning': 'no valid answer found'}
@@ -151,7 +159,7 @@ def process_single_item(item_name):
                 print(result_content)
                 print("----------")
             else:
-                llm_judge = int(result_json.get('result', 0)) # 使用 get 防止 key 缺失
+                llm_judge = int(result_json.get('result', 0))
         
             metrics = {
                 'llm_judge': llm_judge,
@@ -170,7 +178,7 @@ def main():
 
     result_list = []
     
-    print(f"开始评测，共 {len(target_files)} 个文件，并发数: {MAX_WORKERS}")
+    print(f"Judging {len(target_files)} files with {MAX_WORKERS} workers...")
 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         future_to_file = {executor.submit(process_single_item, f): f for f in target_files}
@@ -179,10 +187,10 @@ def main():
             result = future.result()
             if result is not None:
                 result_list.append(result)
-    # 按id对result_list进行排序
+    # Sort by id for stable output
     result_list = sorted(result_list, key=lambda x: int(x['idx']))
 
-    print("评测完成，开始计算 Summary...")
+    print("Evaluation done. Building summary...")
     type2score = {}
     for item in result_list:
         if dataset_name == 'tablebench':
@@ -231,7 +239,7 @@ def main():
     with open(os.path.join(output_dir, '_final_judge_summary.json'), 'w', encoding='utf-8') as f:
         json.dump(summary, f, ensure_ascii=False, indent=4)
         
-    print(f"结果已保存至: {output_dir}")
+    print(f"Results saved to: {output_dir}")
 
 if __name__ == "__main__":
     main()

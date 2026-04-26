@@ -128,7 +128,7 @@ class CodeActAgent:
                 if keep_turn <= 0:
                     msg["content"] = f"\n\n{start_tag}[omitted tool result]{end_tag}\n\n"
                 else:
-                    # 保持原始content不变
+                    # Keep original content unchanged.
                     keep_turn -= 1
         messages = init_msgs + solve_msgs
         return messages

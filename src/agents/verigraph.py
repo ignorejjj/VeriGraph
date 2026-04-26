@@ -84,10 +84,10 @@ class VerigraphAgent(CodeActAgent):
                 continue
 
             if remain_turn <= 0:
-                # 直接省略整个tool observation
+                # Drop the entire tool observation.
                 msg["content"] = self._wrap_tool_result_body("[omitted tool result]", multi_turn=multi_turn)
             else:
-                # 除了最后一次tool response，之前的都删去claim信息
+                # For all but the most recent tool response, strip claim info to save context.
                 if remain_turn < self.max_keep_history_turns and not self.keep_history_claims:
                     # Keep only the execution summary for older tool turns.
                     body = self._extract_tool_result_body(msg.get("content", ""))
