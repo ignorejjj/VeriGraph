@@ -1,0 +1,25 @@
+[
+  {
+    "id": "1",
+    "source": "datainstruct-datatask",
+    "question": "What is the average age of the members of the club \"Bootup Baltimore\"?",
+    "answer": "The average age of the members of the club \"Bootup Baltimore\" is 17.5.",
+    "files": [
+      "Student.xlsx",
+      "Member_of_club.xlsx"
+    ],
+    "dir_id": "datainstruct-datatask_4184_3277",
+    "original_id": "14026"
+  },
+  {
+    "id": "2",
+    "source": "datainstruct-research",
+    "question": "# Generate a data insight report analyzing the relationships between authors, publishers, employees, stores, sales, and discounts in the provided dataset, highlighting key patterns and anomalies.`\n\nDetailed requirements for the report:\n1. Include numbered references for each major insight (e.g., Insight 1, Insight 2...).\n2. Analyze geographic distribution of authors and publishers (e.g., state/country concentrations).\n3. Examine publisher-employee relationships (e.g., job levels per publisher).\n4. Identify sales trends (e.g., top-selling titles, store performance, payment terms).\n5. Evaluate discount structures and their potential impact on sales.\n6. Assess royalty distributions among authors and titles.\n7. Highlight any data anomalies (e.g., missing values, outliers).\n8. Summarize key findings by referencing numbered insights in a conclusion section.\n9. Use clear visualizations (tables/charts) where appropriate to support insights.\n#",
+    "answer": "",
+    "files": [
+      "titleauthor.csv"
+    ],
+    "dir_id": "datainstruct-research_book_publishing_company_4879",
+    "original_id": "3841"
+  }
+]

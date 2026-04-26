@@ -1,0 +1,24 @@
+[
+    {
+        "id": "0",
+        "qtype": "NumericalReasoning",
+        "qsubtype": "Aggregation",
+        "question": "What is the average number of tropical cyclones per season?",
+        "answer": "10.6",
+        "raw_id": "0",
+        "files": [
+            "data.csv"
+        ]
+    },
+    {
+        "id": "1",
+        "qtype": "NumericalReasoning",
+        "qsubtype": "Aggregation",
+        "question": "What is the total average daily flights of all routes combined?",
+        "answer": "115.7",
+        "raw_id": "1",
+        "files": [
+            "data.csv"
+        ]
+    }
+]
