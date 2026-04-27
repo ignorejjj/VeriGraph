@@ -207,7 +207,3 @@ DATASET_PATHS["my_benchmark"] = "/abs/path/to/my_benchmark"
 
 [`data/training/sft_data.json`](data/training/sft_data.json) and [`data/training/rl_data.json`](data/training/rl_data.json) show the SFT / RL schemas.
 
-
-## 🙏 Acknowledgements
-
-The RL pipeline under [`src/training/rl/`](src/training/rl/) is built on top of [verl](https://github.com/volcengine/verl) (Apache 2.0). The inference agent reuses the high-level structure of CodeAct-style agents.
