@@ -2,13 +2,70 @@
 
 set -xeuo pipefail
 
+usage() {
+  cat <<'EOF'
+Usage: bash run_rl.sh [flags]
+
+Required flags (or matching env vars):
+  --model_path PATH          Path to the SFT checkpoint to start from. (env: MODEL_PATH)
+  --ckpts_dir  PATH          Directory to save RL checkpoints into.    (env: CKPTS_DIR)
+  --raw_json   PATH          rl_data.json with the prompt list.        (env: RAW_JSON)
+  --context_root_dir PATH    Root containing per-item context dirs.    (env: CONTEXT_ROOT_DIR)
+  --judge_model NAME         Judge model id for the reward.            (env: VERIGRAPH_JUDGE_MODEL)
+  --judge_api_base URL       OpenAI-compatible base URL for judge.     (env: VERIGRAPH_JUDGE_API_BASE)
+  --judge_api_key KEY        API key for the judge endpoint.           (env: VERIGRAPH_JUDGE_API_KEY)
+
+Optional flags:
+  --root_dir PATH            Where to drop artifacts (default: ./runs).
+  --project_name NAME        wandb / logger project (default: verigraph_rl).
+  --exp_name NAME            wandb / logger run name (default: verigraph_dapo).
+  --rl_data_dir PATH         Pre-built parquet dir; skips preprocess if set.
+  --skip_preprocess          Same as setting RUN_PREPROCESS=false.
+  -h, --help                 Print this message and exit.
+EOF
+}
+
+# Parse flags first; fall back to env vars / defaults afterwards so existing
+# env-var workflows keep working.
+_CLI_MODEL_PATH=""
+_CLI_CKPTS_DIR=""
+_CLI_RAW_JSON=""
+_CLI_CONTEXT_ROOT_DIR=""
+_CLI_JUDGE_MODEL=""
+_CLI_JUDGE_API_BASE=""
+_CLI_JUDGE_API_KEY=""
+_CLI_ROOT_DIR=""
+_CLI_PROJECT_NAME=""
+_CLI_EXP_NAME=""
+_CLI_RL_DATA_DIR=""
+_CLI_RUN_PREPROCESS=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --model_path)        _CLI_MODEL_PATH="$2"; shift 2 ;;
+    --ckpts_dir)         _CLI_CKPTS_DIR="$2"; shift 2 ;;
+    --raw_json)          _CLI_RAW_JSON="$2"; shift 2 ;;
+    --context_root_dir)  _CLI_CONTEXT_ROOT_DIR="$2"; shift 2 ;;
+    --judge_model)       _CLI_JUDGE_MODEL="$2"; shift 2 ;;
+    --judge_api_base)    _CLI_JUDGE_API_BASE="$2"; shift 2 ;;
+    --judge_api_key)     _CLI_JUDGE_API_KEY="$2"; shift 2 ;;
+    --root_dir)          _CLI_ROOT_DIR="$2"; shift 2 ;;
+    --project_name)      _CLI_PROJECT_NAME="$2"; shift 2 ;;
+    --exp_name)          _CLI_EXP_NAME="$2"; shift 2 ;;
+    --rl_data_dir)       _CLI_RL_DATA_DIR="$2"; shift 2 ;;
+    --skip_preprocess)   _CLI_RUN_PREPROCESS="false"; shift ;;
+    -h|--help)           usage; exit 0 ;;
+    *)                   echo "Unknown argument: $1" >&2; usage >&2; exit 2 ;;
+  esac
+done
+
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="${SCRIPT_DIR}"
 ARTIFACT_ROOT_DEFAULT="${REPO_ROOT}/runs"
 
 # Keep artifacts configurable, but always launch code from the repo root so
 # Hydra can resolve `file://verl/trainer/config` reliably.
-ROOT_DIR="${ROOT_DIR:-${ARTIFACT_ROOT_DEFAULT}}"
+ROOT_DIR="${_CLI_ROOT_DIR:-${ROOT_DIR:-${ARTIFACT_ROOT_DEFAULT}}}"
 cd "${REPO_ROOT}"
 export PYTHONPATH="${REPO_ROOT}${PYTHONPATH:+:${PYTHONPATH}}"
 
@@ -24,24 +81,24 @@ N_GPUS="${#GPU_IDS[@]}"
 
 PYTHON_BIN="python"
 
-PROJECT_NAME="${PROJECT_NAME:-verigraph_rl}"
-EXP_NAME="${EXP_NAME:-verigraph_dapo}"
+PROJECT_NAME="${_CLI_PROJECT_NAME:-${PROJECT_NAME:-verigraph_rl}}"
+EXP_NAME="${_CLI_EXP_NAME:-${EXP_NAME:-verigraph_dapo}}"
 LOGGER_BACKENDS="${LOGGER_BACKENDS:-['console','wandb']}"
 
-MODEL_PATH="${MODEL_PATH:-}"
-CKPTS_DIR="${CKPTS_DIR:-}"
+MODEL_PATH="${_CLI_MODEL_PATH:-${MODEL_PATH:-}}"
+CKPTS_DIR="${_CLI_CKPTS_DIR:-${CKPTS_DIR:-}}"
 
-RUN_PREPROCESS="${RUN_PREPROCESS:-true}"
-RAW_JSON="${RAW_JSON:-}"
-CONTEXT_ROOT_DIR="${CONTEXT_ROOT_DIR:-}"
-RL_DATA_DIR="${RL_DATA_DIR:-${ROOT_DIR}/data/verigraph_rl}"
+RUN_PREPROCESS="${_CLI_RUN_PREPROCESS:-${RUN_PREPROCESS:-true}}"
+RAW_JSON="${_CLI_RAW_JSON:-${RAW_JSON:-}}"
+CONTEXT_ROOT_DIR="${_CLI_CONTEXT_ROOT_DIR:-${CONTEXT_ROOT_DIR:-}}"
+RL_DATA_DIR="${_CLI_RL_DATA_DIR:-${RL_DATA_DIR:-${ROOT_DIR}/data/verigraph_rl}}"
 TRAIN_FILE="${RL_DATA_DIR}/train.parquet"
 TEST_FILE="${RL_DATA_DIR}/test.parquet"
 
-# Reward judge endpoint. Set these in the environment before running.
-VERIGRAPH_JUDGE_MODEL="${VERIGRAPH_JUDGE_MODEL:-}"
-VERIGRAPH_JUDGE_API_BASE="${VERIGRAPH_JUDGE_API_BASE:-}"
-VERIGRAPH_JUDGE_API_KEY="${VERIGRAPH_JUDGE_API_KEY:-}"
+# Reward judge endpoint. Pass via CLI flags or set env vars before running.
+VERIGRAPH_JUDGE_MODEL="${_CLI_JUDGE_MODEL:-${VERIGRAPH_JUDGE_MODEL:-}}"
+VERIGRAPH_JUDGE_API_BASE="${_CLI_JUDGE_API_BASE:-${VERIGRAPH_JUDGE_API_BASE:-}}"
+VERIGRAPH_JUDGE_API_KEY="${_CLI_JUDGE_API_KEY:-${VERIGRAPH_JUDGE_API_KEY:-}}"
 export VERIGRAPH_JUDGE_MODEL
 export VERIGRAPH_JUDGE_API_BASE
 export VERIGRAPH_JUDGE_API_KEY

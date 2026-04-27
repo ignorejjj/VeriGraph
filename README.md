@@ -1,236 +1,213 @@
 <div align="center">
 
-# VeriGraph: Grounding Agentic Reasoning in Executable Evidence Graphs
+# 🕸️ VeriGraph: Grounding Agentic Reasoning in Executable Evidence Graphs
 
 <p>
-  <img alt="Python" src="https://img.shields.io/badge/python-3.10%2B-blue">
-  <img alt="PyTorch" src="https://img.shields.io/badge/pytorch-2.x-ee4c2c">
-  <img alt="License" src="https://img.shields.io/badge/license-Apache--2.0-green">
-  <img alt="Status" src="https://img.shields.io/badge/code-anonymous--review-lightgrey">
+  <a href="#"><img alt="Paper" src="https://img.shields.io/badge/Paper-NeurIPS%202026-b31b1b?logo=arxiv&logoColor=white"></a>
+  <a href="#"><img alt="Model" src="https://img.shields.io/badge/🤗%20Model-VeriGraph--8B-yellow"></a>
+  <a href="#"><img alt="Python" src="https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white"></a>
+  <a href="#"><img alt="PyTorch" src="https://img.shields.io/badge/PyTorch-2.x-EE4C2C?logo=pytorch&logoColor=white"></a>
+  <a href="#"><img alt="License" src="https://img.shields.io/badge/License-Apache%202.0-green"></a>
+
 </p>
 
-*A traceable neuro-symbolic agent that builds an executable evidence DAG instead of a linear chain of thought, and is trained with a graph-aware composite reward.*
+<em>A traceable neuro-symbolic agent that builds an <b>executable evidence DAG</b> instead of a linear chain of thought,<br>
+trained end-to-end with a <b>graph-aware composite reward</b>.</em>
 
 </div>
 
 ---
 
-## Overview
+## 💡 Overview
 
-LLM agents on data-intensive tasks usually emit a single text trajectory that entangles deterministic computation with free-form natural-language deduction, which makes their numerical claims hard to reproduce and their qualitative judgments hard to audit.
+LLM agents on data-intensive tasks usually emit a single text trajectory that entangles deterministic computation with free-form deduction, making numerical claims hard to reproduce and qualitative judgments hard to audit.
 
-**VeriGraph** reformulates the agent's objective: instead of producing an unstructured chain of thought, the agent incrementally constructs a **heterogeneous evidence DAG** that links raw data, interpreter variables, computed results, and natural-language claims. Under this formulation, deciding whether an answer is verifiable reduces to a graph-reachability check from raw data nodes to terminal claim nodes.
+**VeriGraph** reframes the agent's objective: instead of a linear chain of thought, the agent incrementally constructs a **heterogeneous evidence DAG** linking raw data, interpreter variables, computed results, and natural-language claims. Verifiability then reduces to a graph-reachability check from raw-data nodes to terminal claim nodes.
 
 <div align="center">
-  <img src="assets/intro_figure.png" alt="VeriGraph vs. linear reasoning" width="92%">
+  <img src="assets/intro_figure.png" alt="VeriGraph vs. linear reasoning" width=100%>
   <br>
-  <sub><b>Figure 1.</b> Comparison between VeriGraph and linear thought–action–observation paradigms.</sub>
+  <sub><b>Figure 1.</b> VeriGraph vs. linear thought–action–observation paradigms.</sub>
 </div>
 
-## Key Features
+## ✨ Key Features
 
-- **Heterogeneous evidence DAG.** *Data nodes* preserve executable provenance over interpreter variables and computed values; *claim nodes* expose semantic derivations among natural-language facts.
-- **Three expansion primitives.** `bind` (grounding), `infer` (derivational), and automatic dependency tracing during code execution (computational), embedded directly in the agent's code action space.
-- **Graph-aware policy optimization.** A composite reward combining outcome correctness, computational integrity, and derivational coherence, built on top of a DAPO-style trainer.
-- **Traceability score.** A graph-based metric that jointly measures (i) connectivity from terminal claims back to raw data sources and (ii) local logical soundness of each derivational edge.
-- **End-to-end reproducibility.** Inference, LLM-judge evaluation, supervised fine-tuning, and RL share a single agent core and a unified data layout; everything runs against any OpenAI-compatible endpoint.
+- 🧩 **Heterogeneous Evidence DAG** — *Data nodes* preserve executable provenance over interpreter variables; *claim nodes* expose semantic derivations among natural-language facts.
+- 🎯 **Graph-Aware RL** — A composite reward (outcome + computational integrity + derivational coherence) on top of a DAPO-style trainer.
+- 📐 **Traceability Score** — Jointly measures connectivity from claims to raw data and local logical soundness of each derivation.
+- 🔁 **End-to-End Reproducibility** — Inference, LLM-judge evaluation, SFT, and RL share a single agent core; everything runs against any OpenAI-compatible endpoint.
 
-## Architecture
+## 🏗️ Framework
 
 <div align="center">
-  <img src="assets/main_figure.png" alt="VeriGraph framework overview" width="96%">
+  <img src="assets/main_figure.png" alt="VeriGraph framework overview" width="100%">
   <br>
   <sub><b>Figure 2.</b> The agent iteratively generates code that simultaneously performs computation and extends a heterogeneous evidence DAG; the policy is optimized via a graph-aware composite reward.</sub>
 </div>
 
-The codebase covers the three pieces needed to reproduce the paper:
-
-| Stage | Module | Description |
-| --- | --- | --- |
-| **Inference** | [`src/agents/`](src/agents/), [`src/inference/`](src/inference/) | The `VerigraphAgent` runs in a persistent Python sandbox and exposes `bind` / `infer` / `submit_answer` primitives that incrementally extend the evidence graph. |
-| **Evaluation** | [`src/evaluation/`](src/evaluation/) | LLM-judge scoring for short-answer QA (TableBench, InfiAgent-DABBench, DSBench, QRData) and a two-axis (Content / Format) rubric for the report-generation benchmark (DAB-Step Research). |
-| **Training** | [`src/training/sft/`](src/training/sft/), [`src/training/rl/`](src/training/rl/) | Cold-start supervised fine-tuning (ms-swift) and a graph-aware RL pipeline built on a [verl](https://github.com/volcengine/verl) fork (DAPO + composite reward). |
-
-## Repository Layout
+## 📂 Repository Layout
 
 ```text
 .
-├── assets/                            # README figures
+├── assets/                     # README figures
 ├── data/
-│   ├── eval/tablebench/               # Sample eval set (questions.json + per-item context/)
-│   └── training/                      # Sample SFT and RL data + per-item working dirs
+│   ├── eval/tablebench/        # Sample eval set (questions.json + per-item context/)
+│   └── training/               # Sample SFT and RL data
 └── src/
-    ├── agents/
-    │   ├── codeact.py                 # CodeAct baseline
-    │   ├── verigraph.py               # VerigraphAgent (ours)
-    │   ├── core/                      # Persistent Python interpreter, OpenAI-compatible client
-    │   └── resources/                 # Prompts and the in-sandbox claim-graph runtime
-    ├── inference/                     # Run an agent over a benchmark
-    ├── evaluation/                    # LLM-judge scoring and summary
-    ├── serving/                       # OpenAI-compatible serving helpers (sglang/vLLM)
+    ├── agents/                 # VerigraphAgent + CodeAct baseline + sandbox runtime
+    ├── inference/              # Run an agent over a benchmark
+    ├── evaluation/             # LLM-judge scoring and summary
+    ├── serving/                # OpenAI-compatible serving helpers (sglang/vLLM)
     └── training/
-        ├── sft/                       # Trajectory-distillation cold start (ms-swift)
-        └── rl/                        # RL pipeline (verl fork + VeriGraph recipe and reward)
+        ├── sft/                # Cold-start trajectory distillation (ms-swift)
+        └── rl/                 # Graph-aware RL (verl fork + VeriGraph recipe)
 ```
 
-## Installation
-
-Python 3.10+ and CUDA 12.x are recommended.
+## 🔧 Installation
 
 ```bash
-# Core dependencies for inference and evaluation
+# Core dependencies (inference + evaluation)
 pip install openai transformers numpy pandas tqdm json-repair
 
-# Optional: serving / training stacks (install the ones you need)
+# Optional: serving / training stacks
 pip install sglang vllm                              # serving runtimes
 pip install "ms-swift[all]" deepspeed                # SFT
 pip install -r src/training/rl/requirements.txt      # RL
 ```
 
-## Quick Start
+> 🐍 Python 3.10+ and CUDA 12.x are recommended.
 
-### 1. Serve a policy model
+## 🏃 Guide
 
-VeriGraph reads and writes through any OpenAI-compatible endpoint. The convenience launcher wraps a typical sglang invocation:
+### 1️⃣ Inference with VeriGraph-8B
 
-```bash
-MODEL_PATH=Qwen/QwQ-32B \
-PORT=8000 TP_SIZE=4 MAX_LEN=131072 \
-bash src/serving/host_model.sh
-```
+Serve the policy model at any OpenAI-compatible endpoint, then launch the agent over a benchmark.
 
-For RoPE-scaled long-context inference (e.g. when serving a checkpoint fine-tuned at 32k but inferring at 128k), pass `ROPE_OVERRIDE`:
+**(a) Serve VeriGraph-8B** (sglang shown; vLLM / TGI work the same way):
 
 ```bash
-ROPE_OVERRIDE='{"rope_scaling":{"rope_type":"yarn","factor":4.0,"original_max_position_embeddings":32768}}' \
-MODEL_PATH=/path/to/checkpoint \
-bash src/serving/host_model.sh
+python -m sglang.launch_server \
+    --model-path models/VeriGraph-8B \
+    --port 8000 \
+    --tp-size 4 \
+    --mem-fraction-static 0.8 \
+    --context-length 131072
 ```
 
-### 2. Run inference
-
-`run_inference.py` drives the agent over a benchmark and writes one JSON file per question into the output directory.
+**(b) Run the agent**:
 
 ```bash
-export VERIGRAPH_MODEL_PATH=Qwen/QwQ-32B
-export VERIGRAPH_API_URL=http://localhost:8000/v1
-export VERIGRAPH_API_KEY=EMPTY
-export VERIGRAPH_OUTPUT_ROOT=$(pwd)/outputs
-
-DATASET_NAME=tablebench AGENT_TYPE=verigraph SAVE_NOTE=run1 \
-bash src/inference/run_inference.sh
+python src/inference/run_inference.py \
+    --dataset_name tablebench \
+    --agent_type verigraph \
+    --save_note run1 \
+    --model_path models/VeriGraph-8B \
+    --api_url http://localhost:8000/v1 \
+    --api_key EMPTY \
+    --max_concurrency 16 \
+    --multi_turn \
+    --keep_history_claims
 ```
 
-Common flags (all settable from the environment, see [`src/inference/run_inference.sh`](src/inference/run_inference.sh)):
+Key flags (see `python src/inference/run_inference.py --help` for the full list):
 
-| Variable | Default | Purpose |
+| Flag | Default | Notes |
 | --- | --- | --- |
-| `DATASET_NAME` | `tablebench` | One of `tablebench`, `infiagent_dabbench`, `dsbench`, `qrdata`, `dabstep_research`. |
-| `AGENT_TYPE` | `verigraph` | `verigraph` (ours) or `codeact` (baseline). |
-| `MULTI_TURN` | `true` | Use the multi-turn chat template instead of single-turn raw text. |
-| `KEEP_HISTORY_CLAIMS` | `true` | Preserve full claim summaries in the compressed history. |
-| `MAX_WORKERS` | `16` | Per-machine concurrency. |
-| `SAVE_NOTE` | `default` | Suffix appended to the output directory name. |
+| `--dataset_name` | `tablebench` | One of `tablebench`, `infiagent_dabbench`, `dsbench`, `qrdata`, `dabstep_research`. |
+| `--agent_type` | `verigraph` | `verigraph` (ours) or `codeact` (baseline). |
+| `--model_path` | `Qwen/QwQ-32B` | Local path or hub id; also used as the tokenizer source. |
+| `--model_name` | = `--model_path` | Model id sent in the OpenAI request, if it differs from the local path. |
+| `--api_url` / `--api_key` | `http://localhost:8000/v1` / `EMPTY` | OpenAI-compatible endpoint. |
+| `--data_root` / `--output_root` | `data/eval` / `outputs` | Override the default eval-data and output roots. |
+| `--max_concurrency` | `32` | Concurrent in-flight questions. |
+| `--per_item_timeout` | `2000` | Per-question wall-clock budget (seconds). |
+| `--save_note` | `""` | Suffix appended to the output directory name. |
 
-Each output directory is named `<dataset>-<agent_type>-<model_suffix>[-<save_note>]`.
+Outputs land in `<output_root>/<dataset>-<agent>-<model>-<save_note>/`, one JSON per question.
 
-### 3. Score the predictions
+### 2️⃣ Evaluation
+
+Score the model's predictions with an LLM-as-Judge:
 
 ```bash
-# Serve a judge model (any OpenAI-compatible chat endpoint works)
-MODEL_PATH=Qwen/QwQ-32B PORT=8000 bash src/serving/host_model.sh
-
-# Run the judge over one or more output directories
-OUTPUT_DIRS=(
-  "$(pwd)/outputs/tablebench-verigraph-QwQ-32B-run1"
-)
-JUDGE_API_URL=http://localhost:8000/v1 \
-JUDGE_MODEL=Qwen/QwQ-32B \
-bash src/evaluation/run_judge.sh
+python src/evaluation/judge.py \
+    --output_dir outputs/tablebench-verigraph-VeriGraph-8B-run1 \
+    --judge_model gpt-4o \
+    --judge_api_url https://api.openai.com/v1 \
+    --judge_api_key sk-... \
+    --max_workers 30
 ```
 
-The script writes `_final_judge_results.json` (per-item judgments) and `_final_judge_summary.json` (per-question-type and global aggregates) into each scored directory. Short-answer datasets are graded with an exact-match / LLM-judge composite; the `dabstep_research` dataset uses the two-axis Content / Format report rubric.
+Pass `--output_dir` once per inference run (loop in your shell to score several runs). The dataset name and golden answers are read directly from the inference outputs — the dataset is parsed from the directory name `<dataset>-<agent>-<model>-<save_note>`, and each per-item JSON already carries its `question_item.answer` — so no separate dataset or golden-answer path is required.
 
-## Data Format
+| Flag | Default | Notes |
+| --- | --- | --- |
+| `--output_dir` | *(required)* | An inference output directory produced by step 1. |
+| `--judge_model` | `Qwen/QwQ-32B` | Model id for the judge. |
+| `--judge_api_url` / `--judge_api_key` | `http://localhost:8000/v1` / `EMPTY` | OpenAI-compatible endpoint for the judge. |
+| `--max_workers` | `30` | Parallel judge requests. |
 
-A small ready-to-use sample of TableBench is shipped under [`data/eval/tablebench/`](data/eval/tablebench/) so that the inference and judge pipelines can be exercised end-to-end without external downloads:
+The script writes `_final_judge_results.json` (per-item) and `_final_judge_summary.json` (aggregates) into the scored directory. Short-answer datasets use a composite of exact match and LLM judge; `dabstep_research` uses a two-axis Content / Format report rubric.
 
-- `questions.json` — list of items with `id`, `question`, `answer`, `qtype`, `qsubtype`, and `files` (file names available inside the per-item context directory).
-- `context/<id>/` — working directory copied into the agent's sandbox at inference time. The agent's `os.getcwd()` will be this folder.
+### 3️⃣ Training
 
-To plug in a new benchmark, mirror the same layout and register the path in [`src/inference/run_inference.py`](src/inference/run_inference.py):
+**Stage 1 — Supervised fine-tuning (cold start).** 
+
+We use [ms-swift](https://github.com/modelscope/ms-swift) for sft training:
+
+```bash
+NPROC_PER_NODE=4 CUDA_VISIBLE_DEVICES=0,1,2,3 \
+swift sft \
+    --model Qwen/Qwen3-8B \
+    --dataset data/training/sft_data.json \
+    --output_dir checkpoints/verigraph_sft \
+    --train_type full \
+    --torch_dtype bfloat16 \
+    --num_train_epochs 1 \
+    --per_device_train_batch_size 1 \
+    --gradient_accumulation_steps 16 \
+    --learning_rate 1e-5 \
+    --max_length 40000 \
+    --warmup_ratio 0.05 \
+    --deepspeed zero3 \
+    --attn_impl flash_attn \
+    --use_liger_kernel true
+```
+
+**Stage 2 — Graph-aware RL.** 
+
+We use DAPO trainer with the VeriGraph composite reward, on a [verl](https://github.com/volcengine/verl) fork:
+
+```bash
+cd src/training/rl
+bash run_rl.sh \
+    --model_path /path/to/sft_checkpoint \
+    --ckpts_dir /path/to/save/rl_checkpoints \
+    --raw_json $(pwd)/../../../data/training/rl_data.json \
+    --context_root_dir $(pwd)/../../../data/training/context \
+    --judge_model gpt-4o \
+    --judge_api_base https://api.openai.com/v1 \
+    --judge_api_key sk-...
+```
+
+`run_rl.sh` accepts these flags directly and forwards them into the verl Hydra configuration. See [`src/training/rl/NOTE.md`](src/training/rl/NOTE.md) for the rollout, reward, and trainer wiring details, and `bash run_rl.sh --help` for the full flag list.
+
+## 📁 Data Format
+
+A small ready-to-use TableBench sample lives under [`data/eval/tablebench/`](data/eval/tablebench/):
+
+- `questions.json` — items with `id`, `question`, `answer`, `qtype`, `qsubtype`, `files`.
+- `context/<id>/` — per-item working directory mounted as the agent's `os.getcwd()`.
+
+To plug in a new benchmark, mirror this layout under `--data_root` and register it in [`src/inference/run_inference.py`](src/inference/run_inference.py):
 
 ```python
 DATASET_PATHS["my_benchmark"] = "/abs/path/to/my_benchmark"
 ```
 
-[`data/training/sft_data.json`](data/training/sft_data.json) and [`data/training/rl_data.json`](data/training/rl_data.json) show the schemas consumed by the SFT and RL launchers, respectively.
+[`data/training/sft_data.json`](data/training/sft_data.json) and [`data/training/rl_data.json`](data/training/rl_data.json) show the SFT / RL schemas.
 
-## Training
 
-### Supervised fine-tuning (cold start)
-
-The cold-start trajectory-distillation stage uses [ms-swift](https://github.com/modelscope/ms-swift) for full-parameter multi-turn fine-tuning:
-
-```bash
-BASE_MODEL=Qwen/Qwen2.5-32B \
-SFT_DATA=$(pwd)/data/training/sft_data.json \
-OUTPUT_DIR=$(pwd)/checkpoints/verigraph_sft \
-NPROC_PER_NODE=8 \
-bash src/training/sft/run_sft.sh
-```
-
-### Reinforcement learning (graph-aware policy optimization)
-
-The RL stage lives under [`src/training/rl/`](src/training/rl/) and is described in detail in [`src/training/rl/NOTE.md`](src/training/rl/NOTE.md). At a high level it reuses the DAPO trainer and adds:
-
-- a `VerigraphAgent`-aligned multi-turn rollout that parses `<code_interpreter>` blocks, executes them in a persistent `CodeExecutor`, returns observations as the next `user` turn, and stops on `submit_answer()`;
-- a composite reward (`outcome` + `process` + `infer`) implemented in `verl/workers/reward_manager/verigraph.py`, with the outcome and inference terms backed by an LLM judge.
-
-Launching RL:
-
-```bash
-cd src/training/rl
-export MODEL_PATH=/path/to/sft_checkpoint
-export CKPTS_DIR=/path/to/save/rl_checkpoints
-export RAW_JSON=$(pwd)/../../../data/training/rl_data.json
-export CONTEXT_ROOT_DIR=$(pwd)/../../../data/training/context
-export VERIGRAPH_JUDGE_MODEL=gpt-4o-mini
-export VERIGRAPH_JUDGE_API_BASE=https://api.openai.com/v1
-export VERIGRAPH_JUDGE_API_KEY=sk-...
-# Optional: export WANDB_API_KEY=...
-
-bash run_rl.sh
-```
-
-## Configuration Reference
-
-| Component | Variable | Notes |
-| --- | --- | --- |
-| Inference | `VERIGRAPH_MODEL_PATH` / `VERIGRAPH_MODEL_NAME` | Tokenizer / model id used in the request. |
-| Inference | `VERIGRAPH_API_URL` / `VERIGRAPH_API_KEY` | OpenAI-compatible endpoint serving the policy model. |
-| Inference | `VERIGRAPH_OUTPUT_ROOT` / `VERIGRAPH_DATA_ROOT` | Override the default `outputs/` and `data/eval/` roots. |
-| Inference | `VERIGRAPH_PER_ITEM_TIMEOUT` | Per-question wall-clock budget in seconds (default `2000`). |
-| Inference | `VERIGRAPH_MAX_CONCURRENCY` | Cap on outstanding LLM requests across workers. |
-| Sandbox | `CODE_EXECUTION_TIMEOUT_SECONDS` | Hard timeout for a single code-cell execution (default `120`). |
-| Judging | `JUDGE_MODEL`, `JUDGE_API_URL`, `JUDGE_API_KEY`, `JUDGE_MAX_WORKERS` | Defaults for [`src/evaluation/judge.py`](src/evaluation/judge.py). |
-| RL | `MODEL_PATH`, `CKPTS_DIR`, `RAW_JSON`, `CONTEXT_ROOT_DIR`, `VERIGRAPH_JUDGE_*` | See [`src/training/rl/run_rl.sh`](src/training/rl/run_rl.sh). |
-| RL | `WANDB_API_KEY` | Optional, only needed if `wandb` logging is enabled. |
-
-## Citation
-
-Anonymous submission to NeurIPS 2026. A citation will be added after the review period.
-
-```bibtex
-@inproceedings{verigraph2026,
-  title     = {VeriGraph: Grounding Agentic Reasoning in Executable Evidence Graphs},
-  author    = {Anonymous},
-  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
-  year      = {2026}
-}
-```
-
-## Acknowledgements
+## 🙏 Acknowledgements
 
 The RL pipeline under [`src/training/rl/`](src/training/rl/) is built on top of [verl](https://github.com/volcengine/verl) (Apache 2.0). The inference agent reuses the high-level structure of CodeAct-style agents.
-

@@ -27,28 +27,32 @@ except Exception:
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Configurable through environment variables; defaults assume a locally-served
-# OpenAI-compatible model and the data layout that ships with this repo.
-MODEL_PATH = os.environ.get("VERIGRAPH_MODEL_PATH", "Qwen/QwQ-32B")
-MODEL_NAME = os.environ.get("VERIGRAPH_MODEL_NAME", MODEL_PATH)
-API_URL = os.environ.get("VERIGRAPH_API_URL", "http://localhost:8000/v1")
-API_KEY = os.environ.get("VERIGRAPH_API_KEY", "EMPTY")
-OUTPUT_ROOT = os.environ.get(
-    "VERIGRAPH_OUTPUT_ROOT", os.path.join(REPO_ROOT, "outputs")
-)
-DATA_ROOT = os.environ.get("VERIGRAPH_DATA_ROOT", os.path.join(REPO_ROOT, "data", "eval"))
+DEFAULT_DATA_ROOT = os.path.join(REPO_ROOT, "data", "eval")
+DEFAULT_OUTPUT_ROOT = os.path.join(REPO_ROOT, "outputs")
 
-MAX_VLLM_CONCURRENCY = int(os.environ.get("VERIGRAPH_MAX_CONCURRENCY", "128"))
-PER_ITEM_TIMEOUT = int(os.environ.get("VERIGRAPH_PER_ITEM_TIMEOUT", "2000"))
+# Populated from CLI in main(); kept module-level so downstream helpers and
+# DATASET_PATHS resolution can read them.
+MODEL_PATH = "Qwen/QwQ-32B"
+MODEL_NAME = MODEL_PATH
+API_URL = "http://localhost:8000/v1"
+API_KEY = "EMPTY"
+OUTPUT_ROOT = DEFAULT_OUTPUT_ROOT
+DATA_ROOT = DEFAULT_DATA_ROOT
+MAX_VLLM_CONCURRENCY = 128
+PER_ITEM_TIMEOUT = 2000
 
 
-DATASET_PATHS = {
-    "tablebench": os.path.join(DATA_ROOT, "tablebench"),
-    "dabstep_research": os.path.join(DATA_ROOT, "dabstep_research"),
-    "infiagent_dabbench": os.path.join(DATA_ROOT, "infiagent_dabbench"),
-    "dsbench": os.path.join(DATA_ROOT, "dsbench"),
-    "qrdata": os.path.join(DATA_ROOT, "qrdata"),
-}
+def _dataset_paths(data_root: str) -> Dict[str, str]:
+    return {
+        "tablebench": os.path.join(data_root, "tablebench"),
+        "dabstep_research": os.path.join(data_root, "dabstep_research"),
+        "infiagent_dabbench": os.path.join(data_root, "infiagent_dabbench"),
+        "dsbench": os.path.join(data_root, "dsbench"),
+        "qrdata": os.path.join(data_root, "qrdata"),
+    }
+
+
+DATASET_PATHS = _dataset_paths(DATA_ROOT)
 
 LLM_CONFIG: Dict[str, Any] = {
     "model_name": MODEL_NAME,
@@ -56,7 +60,7 @@ LLM_CONFIG: Dict[str, Any] = {
     "api_url": API_URL,
     "temperature": 0.7,
     "top_p": 0.95,
-    "max_tokens": 32768, 
+    "max_tokens": 32768,
     "timeout": 600,
     "extra_body": {
         "top_k": 20,
@@ -298,18 +302,56 @@ async def run_experiment(
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--agent_type", type=str, default="verigraph", choices=["codeact", "verigraph"])
-    parser.add_argument("--dataset_name", type=str, default="tablebench", choices=sorted(DATASET_PATHS))
+    parser.add_argument("--dataset_name", type=str, default="tablebench",
+                        help="Benchmark to evaluate. Choices are inferred from --data_root.")
     parser.add_argument("--save_note", type=str, default="")
     parser.add_argument("--num_samples", type=int, default=None)
     parser.add_argument("--multi_turn", action='store_true', default=False)
     parser.add_argument("--keep_history_claims", action='store_true', default=False)
     parser.add_argument("--debug", action="store_true", default=False)
     parser.add_argument("--max_concurrency", "--max_workers", dest="max_concurrency", type=int, default=32)
+
+    parser.add_argument("--model_path", type=str, default="Qwen/QwQ-32B",
+                        help="Local path or hub id of the policy model (used as the tokenizer source).")
+    parser.add_argument("--model_name", type=str, default=None,
+                        help="Model id sent in the OpenAI-compatible request. Defaults to --model_path.")
+    parser.add_argument("--api_url", type=str, default="http://localhost:8000/v1",
+                        help="OpenAI-compatible chat-completions endpoint.")
+    parser.add_argument("--api_key", type=str, default="EMPTY")
+    parser.add_argument("--data_root", type=str, default=DEFAULT_DATA_ROOT,
+                        help="Root directory containing per-benchmark eval data.")
+    parser.add_argument("--output_root", type=str, default=DEFAULT_OUTPUT_ROOT,
+                        help="Root directory under which per-run output folders are created.")
+    parser.add_argument("--per_item_timeout", type=int, default=2000,
+                        help="Per-question wall-clock budget in seconds.")
     return parser.parse_args()
+
+
+def _apply_runtime_args(args):
+    global MODEL_PATH, MODEL_NAME, API_URL, API_KEY, OUTPUT_ROOT, DATA_ROOT
+    global PER_ITEM_TIMEOUT, DATASET_PATHS, LLM_CONFIG
+
+    MODEL_PATH = args.model_path
+    MODEL_NAME = args.model_name or args.model_path
+    API_URL = args.api_url
+    API_KEY = args.api_key
+    OUTPUT_ROOT = args.output_root
+    DATA_ROOT = args.data_root
+    PER_ITEM_TIMEOUT = args.per_item_timeout
+
+    DATASET_PATHS = _dataset_paths(DATA_ROOT)
+    LLM_CONFIG.update({"model_name": MODEL_NAME, "api_url": API_URL, "api_key": API_KEY})
+
+    if args.dataset_name not in DATASET_PATHS:
+        raise SystemExit(
+            f"Unknown --dataset_name '{args.dataset_name}'. "
+            f"Available: {sorted(DATASET_PATHS)}"
+        )
 
 
 if __name__ == "__main__":
     args = parse_args()
+    _apply_runtime_args(args)
     asyncio.run(
         run_experiment(
             agent_type=args.agent_type,
