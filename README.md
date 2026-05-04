@@ -3,7 +3,6 @@
 # 🕸️ VeriGraph: Grounding Agentic Reasoning in Executable Evidence Graphs
 
 <p>
-  <a href="#"><img alt="Paper" src="https://img.shields.io/badge/Paper-NeurIPS%202026-b31b1b?logo=arxiv&logoColor=white"></a>
   <a href="#"><img alt="Model" src="https://img.shields.io/badge/🤗%20Model-VeriGraph--8B-yellow"></a>
   <a href="#"><img alt="Python" src="https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white"></a>
   <a href="#"><img alt="PyTorch" src="https://img.shields.io/badge/PyTorch-2.x-EE4C2C?logo=pytorch&logoColor=white"></a>
