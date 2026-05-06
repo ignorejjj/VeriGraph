@@ -381,6 +381,9 @@ class VeriGraphRewardManager:
         self.process_weight = float(self.config.get("process_weight", 0.0))
         self.final_weight = float(self.config.get("final_weight", 1))
         self.infer_weight = float(self.config.get("infer_weight", 0.0))
+        self.missing_submit_penalty = float(self.config.get("missing_submit_penalty", -1.0))
+        self.reward_clip_min = float(self.config.get("reward_clip_min", -0.3))
+        self.reward_clip_max = float(self.config.get("reward_clip_max", 0.8))
         self.judge_model = str(self.config.get("judge_model") or os.environ.get("VERIGRAPH_JUDGE_MODEL", "")).strip()
         self.judge_api_base = str(self.config.get("judge_api_base") or os.environ.get("VERIGRAPH_JUDGE_API_BASE", "")).strip()
         self.judge_api_key = str(self.config.get("judge_api_key") or os.environ.get("VERIGRAPH_JUDGE_API_KEY", "EMPTY")).strip()
@@ -632,19 +635,15 @@ class VeriGraphRewardManager:
             elif valid_trajectory and submitted and final_claims and idx in judge_lookup:
                 final_reward, judge_reason = judge_results[judge_lookup[idx]]
 
-            if termination_reason in NEGATIVE_TERMINATION_REASONS:
-                process_reward = 0.0
-                infer_reward = 0.0
-                final_reward = 0.0
-                failure_penalty = -1.0
-                total_reward = -1.0
-            else:
-                failure_penalty = 0.0
-                total_reward = (
-                    self.process_weight * process_reward
-                    + self.infer_weight * infer_reward
-                    + self.final_weight * final_reward
-                )
+            weighted_reward = (
+                self.process_weight * process_reward
+                + self.infer_weight * infer_reward
+                + self.final_weight * final_reward
+            )
+            missing_submission = (not submitted) or (not final_claims)
+            failure_penalty = self.missing_submit_penalty if missing_submission else 0.0
+            total_reward = weighted_reward + failure_penalty
+            total_reward = max(self.reward_clip_min, min(self.reward_clip_max, total_reward))
 
             reward_tensor[idx, max(0, valid_response_length - 1)] = total_reward
             total_rewards.append(total_reward)
