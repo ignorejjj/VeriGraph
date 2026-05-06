@@ -603,7 +603,9 @@ class VeriGraphRewardManager:
                 if key not in infer_judge_lookup:
                     continue
                 step_score, step_reason = infer_judge_results[infer_judge_lookup[key]]
-                infer_scores.append(float(step_score))
+                # Map judge score to {-0.5, 1.0}: positive -> 1.0, otherwise -> -0.5
+                mapped_score = 1.0 if float(step_score) > 0 else -0.5
+                infer_scores.append(mapped_score)
                 infer_reasons.append(step_reason)
     
             if len(infer_scores) == 0:
