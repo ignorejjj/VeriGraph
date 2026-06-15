@@ -1,0 +1,8 @@
+runs/
+output/
+__pycache__/
+*.py[cod]
+.DS_Store
+.env
+.venv/
+node_modules/

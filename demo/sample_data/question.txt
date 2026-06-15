@@ -1,0 +1,15 @@
+Produce a comprehensive data analysis report that identifies optimal fee optimization strategies for merchants by analyzing payment transaction patterns, fee rule applicability, and merchant characteristics.
+
+The report should analyze how different combinations of transaction characteristics (ACI type, card scheme, domestic vs international, credit/debit) and merchant attributes (account type, MCC, volume, fraud levels) impact processing costs.
+
+Include specific recommendations for each merchant in the dataset on how to reconfigure their payment processing setup to minimize fees while maintaining security and conversion rates.
+
+Checklist:
+- Analysis of current fee distribution across merchants and transaction types
+- Identification of the most expensive fee drivers for each merchant
+- Comparison of actual vs optimal ACI usage patterns
+- Assessment of domestic vs international transaction cost differences
+- Evaluation of fraud rate impact on processing costs
+- Volume-based pricing optimization opportunities
+- Merchant-specific recommendations with estimated cost savings
+- Summary of highest-impact optimization strategies across the merchant portfolio

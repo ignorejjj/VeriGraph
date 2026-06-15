@@ -51,6 +51,7 @@ LLM agents on data-intensive tasks usually emit a single text trajectory that en
 ├── data/
 │   ├── eval/tablebench/        # Sample eval set (questions.json + per-item context/)
 │   └── training/               # Sample SFT and RL data
+├── demo/                       # Interactive web UI: live evidence-DAG visualization
 └── src/
     ├── agents/                 # VerigraphAgent + CodeAct baseline + sandbox runtime
     ├── inference/              # Run an agent over a benchmark
@@ -204,4 +205,46 @@ DATASET_PATHS["my_benchmark"] = "/abs/path/to/my_benchmark"
 ```
 
 [`data/training/sft_data.json`](data/training/sft_data.json) and [`data/training/rl_data.json`](data/training/rl_data.json) show the SFT / RL schemas.
+
+## 🖥️ Interactive Demo
+
+An interactive web UI under [`demo/`](demo/) visualizes the agent building its
+evidence DAG in real time — streamed reasoning, sandboxed `<code_interpreter>`
+execution, and a live `source → artifact → cell/span → claim` graph.
+
+```bash
+export OPENAI_API_KEY=sk-...        # Responses-API reasoning endpoint
+python3 demo/server.py              # then open http://127.0.0.1:7867
+```
+
+The **Local data** mode (upload a CSV and ask a question) works out of the box;
+web-search and financial-API modes are opt-in. See [`demo/README.md`](demo/README.md)
+for configuration and an offline (`VERIGRAPH_MOCK=1`) walkthrough.
+
+## 📝 Citation
+
+If you find VeriGraph useful in your research, please consider citing:
+
+```bibtex
+@misc{verigraph2026,
+  title  = {VeriGraph: Grounding Agentic Reasoning in Executable Evidence Graphs},
+  author = {Jin, Jiajie},
+  year   = {2026},
+  note   = {https://github.com/ignorejjj/VeriGraph}
+}
+```
+
+## 🙏 Acknowledgements
+
+This project builds on excellent open-source work. The RL stack under
+[`src/training/rl/`](src/training/rl/) is a fork of
+[verl](https://github.com/volcengine/verl); supervised fine-tuning uses
+[ms-swift](https://github.com/modelscope/ms-swift); and serving relies on
+[sglang](https://github.com/sgl-project/sglang) / [vLLM](https://github.com/vllm-project/vllm).
+
+## 📄 License
+
+This project is released under the [Apache License 2.0](LICENSE). The bundled
+verl fork retains its original license under
+[`src/training/rl/LICENSE`](src/training/rl/LICENSE).
 

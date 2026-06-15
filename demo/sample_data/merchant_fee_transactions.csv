@@ -1,0 +1,25 @@
+merchant_id,merchant_name,account_type,mcc,monthly_volume_usd,transactions,avg_ticket_usd,fraud_rate_pct,card_scheme,card_type,geography,aci,current_fee_bps,current_fixed_fee_usd,optimal_aci,optimal_fee_bps,optimal_fixed_fee_usd,approval_rate_pct,security_profile
+M001,Northstar Gadgets,standard,5732,420000,5200,80.77,0.18,Visa,credit,domestic,recurring,178,0.12,recurring,148,0.10,96.8,3ds_selective
+M001,Northstar Gadgets,standard,5732,120000,1300,92.31,0.42,Visa,credit,international,recurring,252,0.18,recurring,218,0.16,93.4,3ds_selective
+M001,Northstar Gadgets,standard,5732,96000,2200,43.64,0.11,Mastercard,debit,domestic,ecommerce,132,0.10,ecommerce,118,0.08,97.5,low_risk_exemption
+M001,Northstar Gadgets,standard,5732,68000,760,89.47,0.54,Mastercard,credit,international,ecommerce,268,0.20,recurring,226,0.17,91.9,3ds_full
+M002,Urban Threads,starter,5691,210000,6400,32.81,0.31,Visa,debit,domestic,ecommerce,145,0.09,ecommerce,122,0.07,95.2,low_risk_exemption
+M002,Urban Threads,starter,5691,87000,1500,58.00,0.69,Visa,credit,international,ecommerce,286,0.22,recurring,244,0.18,90.8,3ds_full
+M002,Urban Threads,starter,5691,134000,3100,43.23,0.22,Mastercard,credit,domestic,moto,210,0.16,ecommerce,154,0.10,92.7,3ds_selective
+M002,Urban Threads,starter,5691,52000,980,53.06,0.77,Amex,credit,international,moto,345,0.28,ecommerce,292,0.22,88.9,3ds_full
+M003,GreenBite Market,premium,5411,690000,15500,44.52,0.08,Visa,debit,domestic,ecommerce,98,0.05,ecommerce,84,0.04,98.6,low_risk_exemption
+M003,GreenBite Market,premium,5411,245000,4100,59.76,0.21,Mastercard,credit,domestic,ecommerce,126,0.07,ecommerce,104,0.05,97.8,low_risk_exemption
+M003,GreenBite Market,premium,5411,180000,2300,78.26,0.36,Visa,credit,international,recurring,205,0.12,recurring,174,0.10,95.1,3ds_selective
+M003,GreenBite Market,premium,5411,76000,1200,63.33,0.44,Mastercard,debit,international,ecommerce,192,0.11,ecommerce,160,0.09,94.9,3ds_selective
+M004,Atlas Travel Pro,standard,4722,510000,2900,175.86,0.64,Visa,credit,international,moto,328,0.32,recurring,276,0.24,88.4,3ds_full
+M004,Atlas Travel Pro,standard,4722,260000,1800,144.44,0.47,Mastercard,credit,international,ecommerce,294,0.25,recurring,252,0.21,90.6,3ds_full
+M004,Atlas Travel Pro,standard,4722,185000,1400,132.14,0.19,Visa,debit,domestic,ecommerce,150,0.11,ecommerce,128,0.09,96.1,3ds_selective
+M004,Atlas Travel Pro,standard,4722,92000,520,176.92,0.82,Amex,credit,international,moto,372,0.34,ecommerce,318,0.28,86.7,3ds_full
+M005,PixelForge SaaS,premium,7372,880000,11200,78.57,0.14,Visa,credit,domestic,recurring,118,0.06,recurring,92,0.04,98.1,network_tokenized
+M005,PixelForge SaaS,premium,7372,340000,3600,94.44,0.29,Mastercard,credit,international,recurring,184,0.10,recurring,150,0.08,96.0,network_tokenized
+M005,PixelForge SaaS,premium,7372,155000,2900,53.45,0.09,Visa,debit,domestic,ecommerce,104,0.05,recurring,88,0.04,98.4,network_tokenized
+M005,PixelForge SaaS,premium,7372,118000,1250,94.40,0.33,Mastercard,debit,international,ecommerce,176,0.10,recurring,146,0.08,95.7,3ds_selective
+M006,Harbor Home Goods,starter,5712,175000,2300,76.09,0.27,Visa,credit,domestic,moto,214,0.18,ecommerce,158,0.11,91.8,3ds_selective
+M006,Harbor Home Goods,starter,5712,99000,1250,79.20,0.58,Mastercard,credit,international,moto,318,0.27,ecommerce,266,0.21,88.1,3ds_full
+M006,Harbor Home Goods,starter,5712,142000,2600,54.62,0.19,Visa,debit,domestic,ecommerce,142,0.10,ecommerce,120,0.08,96.6,low_risk_exemption
+M006,Harbor Home Goods,starter,5712,58000,670,86.57,0.74,Amex,credit,international,ecommerce,334,0.29,ecommerce,286,0.23,87.4,3ds_full

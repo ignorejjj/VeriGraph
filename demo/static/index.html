@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>VeriGraph Demo</title>
+    <link rel="stylesheet" href="/static/styles.css?v=apple3" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <div class="brand-mark" aria-hidden="true"><span></span></div>
+          <div>
+            <h1>VeriGraph</h1>
+            <p class="tagline">Live ReAct agent with claim-level verification &amp; evidence graphs.</p>
+          </div>
+        </div>
+        <div class="runtime-strip">
+          <span class="runtime-pill" id="modelPill">model: ...</span>
+          <span class="runtime-pill muted" id="endpointPill">endpoint: ...</span>
+          <span class="runtime-pill" id="statusPill">idle</span>
+        </div>
+      </header>
+
+      <section class="control-surface" aria-label="Run controls">
+        <div class="control-intro">
+          <h2>Run a verification</h2>
+          <p>Pick an evidence source, then watch every claim and its supporting path appear live.</p>
+        </div>
+        <label class="query-field">
+          <span>Research query</span>
+          <textarea id="queryInput" rows="4" spellcheck="false"></textarea>
+        </label>
+        <div class="file-zone">
+          <label class="mode-picker">
+            <span>Evidence mode</span>
+            <select id="dataMode" name="data_mode">
+              <option value="local">Local data</option>
+              <option value="hybrid">Hybrid data + web/API</option>
+              <option value="web">Web research</option>
+              <option value="finance" selected>Financial API + web</option>
+            </select>
+          </label>
+          <label class="file-picker">
+            <span>Data file</span>
+            <input id="fileInput" type="file" name="files" multiple />
+          </label>
+          <div class="file-summary" id="fileSummary">Sample data will be used.</div>
+          <label class="sample-toggle">
+            <input id="sampleToggle" type="checkbox" checked />
+            <span>Include sample dataset</span>
+          </label>
+          <button id="runButton" class="primary-action" type="button">
+            <span class="button-icon" aria-hidden="true"></span>
+            <span>Run VeriGraph</span>
+            <span class="button-tail">live</span>
+          </button>
+          <button id="loadNvidiaSample" class="secondary-action" type="button">Load NVIDIA outlook case</button>
+          <button id="loadTencentSample" class="secondary-action" type="button">Load Tencent moat case</button>
+          <button id="loadZhFinanceSample" class="secondary-action" type="button">载入中文混合证据样例</button>
+        </div>
+      </section>
+
+      <section class="workspace-grid">
+        <section class="panel trace-panel" aria-label="Agent ReAct trace">
+          <div class="panel-head">
+            <div>
+              <h2>ReAct Trace</h2>
+            </div>
+            <span class="counter" id="turnCounter">0 turns</span>
+          </div>
+          <div id="traceList" class="trace-list empty-state">
+            <div class="empty-title">Waiting for a run</div>
+            <div class="empty-copy">The trace will show planning, Python actions, and tool observations as they arrive.</div>
+          </div>
+        </section>
+
+        <section class="panel graph-panel" aria-label="Evidence graph">
+          <div class="panel-head">
+            <div>
+              <h2>Evidence Graph</h2>
+            </div>
+            <div class="graph-stats" id="graphStats">
+              <span>0 claims</span>
+              <span>0 data</span>
+            </div>
+          </div>
+          <div class="graph-frame">
+            <div class="graph-legend-panel" aria-label="Graph legend">
+              <span><i class="legend-node data"></i>Data node</span>
+              <span><i class="legend-node external"></i>External source</span>
+              <span><i class="legend-node claim"></i>Claim node</span>
+              <span><i class="legend-edge retrieve"></i>Retrieve edge</span>
+              <span><i class="legend-edge compute"></i>Computation edge</span>
+              <span><i class="legend-edge bind"></i>Bind edge</span>
+              <span><i class="legend-edge infer"></i>Infer edge</span>
+            </div>
+            <div class="graph-controls" aria-label="Graph zoom controls">
+              <button id="zoomOutButton" type="button" aria-label="Zoom out">−</button>
+              <button id="zoomResetButton" type="button" aria-label="Reset zoom">100%</button>
+              <button id="zoomInButton" type="button" aria-label="Zoom in">+</button>
+            </div>
+            <svg id="graphSvg" role="img" aria-label="Evidence graph visualization"></svg>
+          </div>
+          <aside class="node-inspector" id="nodeInspector">
+            <span class="inspector-label">Selection</span>
+            <p>Hover a report sentence or graph node to inspect the supporting chain.</p>
+          </aside>
+        </section>
+      </section>
+
+      <section class="panel report-panel" id="reportPanel" aria-label="Final cited report" hidden>
+        <div class="panel-head">
+          <div>
+            <h2 id="reportTitle">Report</h2>
+          </div>
+          <span class="counter" id="claimCounter">0 final claims</span>
+        </div>
+        <div id="reportBody" class="report-body"></div>
+      </section>
+    </main>
+
+    <div id="tooltip" class="tooltip" hidden></div>
+    <script src="/static/app.js"></script>
+  </body>
+</html>
