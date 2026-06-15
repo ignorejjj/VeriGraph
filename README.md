@@ -208,6 +208,14 @@ DATASET_PATHS["my_benchmark"] = "/abs/path/to/my_benchmark"
 
 ## 🖥️ Interactive Demo
 
+<!--
+  Demo video: upload the .mp4 to a GitHub issue/release comment box, then paste
+  the returned https://github.com/user-attachments/assets/... URL on its own line
+  below (keep the blank lines around it so GitHub renders an inline player).
+-->
+
+https://github.com/user-attachments/assets/REPLACE_WITH_UPLOADED_VIDEO_URL
+
 An interactive web UI under [`demo/`](demo/) visualizes the agent building its
 evidence DAG in real time — streamed reasoning, sandboxed `<code_interpreter>`
 execution, and a live `source → artifact → cell/span → claim` graph.
