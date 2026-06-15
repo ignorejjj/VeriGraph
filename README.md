@@ -16,15 +16,12 @@ trained end-to-end with a <b>graph-aware composite reward</b>.</em>
 
 ---
 
-## �️ Interactive Demo
+## Interactive Demo
 
-<!--
-  Demo video: upload the .mp4 to a GitHub issue/release comment box, then paste
-  the returned https://github.com/user-attachments/assets/... URL on its own line
-  below (keep the blank lines around it so GitHub renders an inline player).
--->
 
-https://github.com/user-attachments/assets/REPLACE_WITH_UPLOADED_VIDEO_URL
+
+https://github.com/user-attachments/assets/f280b1aa-8916-46bd-8c59-a5a766dd8206
+
 
 An interactive web UI under [`demo/`](demo/) visualizes the agent building its
 evidence DAG in real time — streamed reasoning, sandboxed `<code_interpreter>`
@@ -39,7 +36,7 @@ The **Local data** mode (upload a CSV and ask a question) works out of the box;
 web-search and financial-API modes are opt-in. See [`demo/README.md`](demo/README.md)
 for configuration and an offline (`VERIGRAPH_MOCK=1`) walkthrough.
 
-## �💡 Overview
+## 💡 Overview
 
 LLM agents on data-intensive tasks usually emit a single text trajectory that entangles deterministic computation with free-form deduction, making numerical claims hard to reproduce and qualitative judgments hard to audit.
 
