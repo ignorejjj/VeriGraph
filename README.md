@@ -16,7 +16,30 @@ trained end-to-end with a <b>graph-aware composite reward</b>.</em>
 
 ---
 
-## 💡 Overview
+## �️ Interactive Demo
+
+<!--
+  Demo video: upload the .mp4 to a GitHub issue/release comment box, then paste
+  the returned https://github.com/user-attachments/assets/... URL on its own line
+  below (keep the blank lines around it so GitHub renders an inline player).
+-->
+
+https://github.com/user-attachments/assets/REPLACE_WITH_UPLOADED_VIDEO_URL
+
+An interactive web UI under [`demo/`](demo/) visualizes the agent building its
+evidence DAG in real time — streamed reasoning, sandboxed `<code_interpreter>`
+execution, and a live `source → artifact → cell/span → claim` graph.
+
+```bash
+export OPENAI_API_KEY=sk-...        # Responses-API reasoning endpoint
+python3 demo/server.py              # then open http://127.0.0.1:7867
+```
+
+The **Local data** mode (upload a CSV and ask a question) works out of the box;
+web-search and financial-API modes are opt-in. See [`demo/README.md`](demo/README.md)
+for configuration and an offline (`VERIGRAPH_MOCK=1`) walkthrough.
+
+## �💡 Overview
 
 LLM agents on data-intensive tasks usually emit a single text trajectory that entangles deterministic computation with free-form deduction, making numerical claims hard to reproduce and qualitative judgments hard to audit.
 
@@ -206,30 +229,7 @@ DATASET_PATHS["my_benchmark"] = "/abs/path/to/my_benchmark"
 
 [`data/training/sft_data.json`](data/training/sft_data.json) and [`data/training/rl_data.json`](data/training/rl_data.json) show the SFT / RL schemas.
 
-## 🖥️ Interactive Demo
-
-<!--
-  Demo video: upload the .mp4 to a GitHub issue/release comment box, then paste
-  the returned https://github.com/user-attachments/assets/... URL on its own line
-  below (keep the blank lines around it so GitHub renders an inline player).
--->
-
-https://github.com/user-attachments/assets/REPLACE_WITH_UPLOADED_VIDEO_URL
-
-An interactive web UI under [`demo/`](demo/) visualizes the agent building its
-evidence DAG in real time — streamed reasoning, sandboxed `<code_interpreter>`
-execution, and a live `source → artifact → cell/span → claim` graph.
-
-```bash
-export OPENAI_API_KEY=sk-...        # Responses-API reasoning endpoint
-python3 demo/server.py              # then open http://127.0.0.1:7867
-```
-
-The **Local data** mode (upload a CSV and ask a question) works out of the box;
-web-search and financial-API modes are opt-in. See [`demo/README.md`](demo/README.md)
-for configuration and an offline (`VERIGRAPH_MOCK=1`) walkthrough.
-
-## 📝 Citation
+##  Citation
 
 If you find VeriGraph useful in your research, please consider citing:
 
